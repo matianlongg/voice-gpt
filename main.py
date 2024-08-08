@@ -1,4 +1,10 @@
 import importlib
+from dotenv import load_dotenv
+import os
+
+# 加载 .env 文件
+load_dotenv()
+
 import sys
 import time
 from config import config
@@ -11,7 +17,8 @@ import dashscope
 
 # 阿里云key
 # https://ai.aliyun.com/nls/trans
-dashscope.api_key = ''
+if 'DASHSCOPE_API_KEY' in os.environ:
+    dashscope.api_key = os.environ['DASHSCOPE_API_KEY']
 
 class MainApp:
     def __init__(self):
@@ -71,7 +78,7 @@ class MainApp:
             self.recognition.stop()
             self.recognition = None
             print("recognition已关闭")
-        except:
+        except Exception as e :
             print(f"Error stopping recognition: {e}")
 
 
