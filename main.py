@@ -1,4 +1,6 @@
+import datetime
 import importlib
+import threading
 from dotenv import load_dotenv
 import os
 
@@ -33,6 +35,8 @@ class MainApp:
         self._last_speech_time = None
         self._is_playing = False
         self._cache_text = ""
+        self._mute_duration = 2.0  # 播放结束后静音检测时间
+
 
     def audio_callback(self, indata, frames, audio_time, status, voice_detected):
         """Send audio data to the recognition service"""
@@ -41,8 +45,8 @@ class MainApp:
         if self.recognition is not None and self.audio_input.is_working():
             self._audio_frame_count += 1
             buffer = indata.tobytes()
-            sys.stdout.write("\rRecording: [{:<10}]".format('=' * self._audio_frame_count))
-            sys.stdout.flush()
+            # sys.stdout.write("\rRecording: [{:<10}]".format('=' * self._audio_frame_count))
+            # sys.stdout.flush()
             self.recognition.send_audio_frame(buffer)
 
     def handle_voice_detection(self, voice_detected, current_time):
@@ -68,8 +72,8 @@ class MainApp:
             self._last_speech_time = None
 
     def start_recognition(self):
-        if self.speech_synthesizer is None:
-            self.speech_synthesizer = TTSFactory.create_tts('aliyun', player=self.audio_player)
+        print("start_recognition```````````````")
+        
         self.recognition = ASRFactory.create_asr("aliyun", callback=self.chat)
         self.recognition.start()
         self._audio_frame_count = 0
@@ -92,11 +96,16 @@ class MainApp:
     def stop(self):
         self.audio_input.stop()
         self.stop_recognition()
-        
+
     def chat(self, text):
+        current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+        print(f"当前时间2: {current_time}")
         if self._is_playing:
             self._cache_text += text
             return
+        if self.speech_synthesizer is None:
+            self.speech_synthesizer = TTSFactory.create_tts('aliyun', player=self.audio_player)
+            print("start speech_synthesizer```````````````")
         self._is_playing = True
         answer = ""
         for text in self.llm(text):
@@ -104,16 +113,21 @@ class MainApp:
             self.speech_synthesizer.call_synthesizer(text)
         print(answer)
         self.speech_synthesizer.streaming_complete()
-        
+
     def on_play_end(self):
         print("on_play_end")
         if self.speech_synthesizer:
             print("interrupt playing tts")
             self.speech_synthesizer.interrupt()
             self.speech_synthesizer = None
-        self._is_playing = False     
-        print("缓冲内容", self._cache_text)   
+        print("缓冲内容", self._cache_text)
         self._cache_text = ""
+        current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+        print(f"当前时间1: {current_time}")
+        threading.Timer(self._mute_duration, self.unlock_audio_callback).start()
+
+    def unlock_audio_callback(self):
+        self._is_playing = False  # 解锁音频回调
 
 if __name__ == "__main__":
     app = MainApp()

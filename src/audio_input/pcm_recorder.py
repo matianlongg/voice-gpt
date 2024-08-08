@@ -8,7 +8,7 @@ CHANNELS = 1  # 单声道
 DTYPE = 'int16'  # 音频样本的数据类型
 FORMAT_PCM = 'pcm'  # 音频数据格式
 BLOCK_SIZE = 1280  # 每缓冲区的帧数，相当于16kHz时约80毫秒
-ENERGY_THRESHOLD = 15  # 能量阈值
+ENERGY_THRESHOLD = 2  # 能量阈值
 
 class Recorder(AudioInput):
     """

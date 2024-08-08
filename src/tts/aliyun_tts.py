@@ -36,8 +36,8 @@ class Callback(ResultCallback):
 
     def on_event(self, message):
         self._synth_frame_count += 1
-        sys.stdout.write("\rPlaying: [{:<10}]".format('=' * self._synth_frame_count))
-        sys.stdout.flush()
+        # sys.stdout.write("\rPlaying: [{:<10}]".format('=' * self._synth_frame_count))
+        # sys.stdout.flush()
 
     def on_data(self, data: bytes) -> None:
         self.player.play(data)
@@ -91,7 +91,7 @@ class AliyunTTS(TTS):
                 self._player.feed_finish()
                 break
             else:
-                print("streaming synthesizer call with text: ", message)
+                # print("streaming synthesizer call with text: ", message)
                 self.synthesizer.streaming_call(message)
                 self.message_queue.task_done()  # 表示任务已完成
 
