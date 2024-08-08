@@ -1,0 +1,35 @@
+asr:
+  type: aliyun
+  aliyun:
+    api_key: ${DASHSCOPE_API_KEY}
+  openai:
+    api_key: ${OPENAI_API_KEY}
+
+llm:
+  type: aliyun
+  aliyun:
+    model: qwen-turbo
+    api_key: ${DASHSCOPE_API_KEY}
+    prompt: |
+      这是一个提示词,
+      提示词
+      提示词2
+  openai:
+    model: gpt-4o
+    api_key: ${OPENAI_API_KEY}
+    base_url: ${OPENAI_BASE_URL}
+    prompt: |
+      这是一个提示词,
+      提示词
+      提示词2
+
+tts:
+  type: aliyun
+  aliyun:
+    model: cosyvoice-v1
+    voice: longxiaochun
+    api_key: ${DASHSCOPE_API_KEY}
+  openai:
+    model: openai-voice
+    voice: openai-voice-1
+    api_key: ${OPENAI_API_KEY}

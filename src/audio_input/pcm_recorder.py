@@ -1,94 +1,78 @@
-"""
-pcm_recorder.py: A simple class for managing PCM audio recordings.
-
-This module provides a `Recorder` class that can be used to manage audio recordings in PCM format.
-It utilizes the `sounddevice` library for capturing audio from the system's default input device.
-
-Attributes:
-    sample_rate (int): The sample rate at which audio will be recorded, measured in Hz.
-    channels (int): The number of audio channels being recorded (mono or stereo).
-    dtype (str): The data type of the recorded samples ('int16', 'float32', etc.).
-    format_pcm (str): The format of the audio data ('pcm').
-    block_size (int): The number of frames per buffer; determines the recording interval.
-"""
 import numpy as np
 import sounddevice as sd
+from src.audio_input.base import AudioInput
 
-from src.audio_input.base import IAudioInput  # For audio recording capabilities
+# 录音配置参数
+SAMPLE_RATE = 16000  # 采样率（赫兹）
+CHANNELS = 1  # 单声道
+DTYPE = 'int16'  # 音频样本的数据类型
+FORMAT_PCM = 'pcm'  # 音频数据格式
+BLOCK_SIZE = 1280  # 每缓冲区的帧数，相当于16kHz时约80毫秒
+ENERGY_THRESHOLD = 15  # 能量阈值
 
-# Recording configuration parameters
-sample_rate = 16000  # Sample rate (Hz)
-channels = 1  # Mono channel
-dtype = 'int16'  # Data type for audio samples
-format_pcm = 'pcm'  # Audio data format
-block_size = 1280  # Frames per buffer, equivalent to approximately 80 ms at 16kHz
-energy_threshold = 15
-
-class Recorder(IAudioInput):
+class Recorder(AudioInput):
     """
-    A class for managing PCM audio recordings using the sounddevice library.
+    使用 sounddevice 库管理 PCM 音频录音的类。
 
-    Attributes:
-        _is_working (bool): Indicates whether the recorder is currently active.
-        stream (sd.InputStream): An instance of the InputStream class for recording audio.
+    属性:
+        _is_working (bool): 指示录音机当前是否处于活动状态。
+        stream (sd.InputStream): 用于录音的 InputStream 类的实例。
 
-    Methods:
-        start(): Starts the recording process.
-        stop(): Stops the recording process.
-        is_working(): Returns the current status of the recorder.
-        __del__(): Ensures proper cleanup by closing the audio stream upon object deletion.
+    方法:
+        start(): 开始录音过程。
+        stop(): 停止录音过程。
+        is_working(): 返回录音机的当前状态。
+        __del__(): 在对象删除时通过关闭音频流确保适当的清理。
     """
 
     def __init__(self, callback):
         """
-        Initializes the Recorder with specified recording parameters and a callback function.
+        使用指定的录音参数和回调函数初始化 Recorder。
 
-        Args:
-            callback (function): A user-defined function to handle incoming audio data.
+        参数:
+            callback (function): 用户定义的处理传入音频数据的函数。
         """
-        # Initialize the audio stream
         self._is_working = False
         self.user_callback = callback
         self.stream = sd.InputStream(
-            samplerate=sample_rate,
-            channels=channels,
-            dtype=dtype,
-            blocksize=block_size,
+            samplerate=SAMPLE_RATE,
+            channels=CHANNELS,
+            dtype=DTYPE,
+            blocksize=BLOCK_SIZE,
             callback=self._internal_callback
         )
 
     def _internal_callback(self, indata, frames, time, status):
-        """Internal callback function to detect voice activity and call the user callback."""
+        """内部回调函数，用于检测语音活动并调用用户回调。"""
         if status:
             print(status)
         
-        # Compute the energy of the audio signal
+        # 计算音频信号的能量
         energy = np.linalg.norm(indata) / frames
-        # print("energy:", energy)
-        # Check if the energy exceeds the threshold
-        voice_detected = energy > energy_threshold
-        # Voice activity detected; call the user callback
+        # 检查能量是否超过阈值
+        voice_detected = energy > ENERGY_THRESHOLD
+        # 检测到语音活动，调用用户回调
         self.user_callback(indata, frames, time, status, voice_detected)
 
     def start(self):
-        """Starts the recording process."""
+        """开始录音过程。"""
         self.stream.start()
         self._is_working = True
 
     def stop(self):
-        """Stops the recording process."""
+        """停止录音过程。"""
         self._is_working = False
         self.stream.stop()
 
     def is_working(self):
         """
-        Checks if the recorder is currently active.
+        检查录音机当前是否处于活动状态。
 
-        Returns:
-            bool: True if recording, False otherwise.
+        返回:
+            bool: 如果正在录音，则返回 True，否则返回 False。
         """
         return self._is_working
 
     def __del__(self):
-        """Ensures the audio stream is closed when the Recorder object is deleted."""
+        """确保在 Recorder 对象删除时关闭音频流。"""
         self.stream.close()

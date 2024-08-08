@@ -2,6 +2,10 @@ import importlib
 from dotenv import load_dotenv
 import os
 
+from src.asr.base import ASRFactory
+from src.llm.base import LLMFactory
+from src.tts.base import TTSFactory
+
 # 加载 .env 文件
 load_dotenv()
 
@@ -9,10 +13,7 @@ import sys
 import time
 from config import config
 from src.audio_input.pcm_recorder import Recorder
-from src.audio_player.pcm_player import PcmPlayer
-from src.llm.aliyun_llm import AliyunLLM
-from src.tts.aliyun_tts import AliyunTTS
-from src.asr.aliyun_recognizer import AliyunRecognizer
+from src.audio_output.pcm_player import PcmPlayer
 import dashscope
 
 # 阿里云key
@@ -24,7 +25,7 @@ class MainApp:
     def __init__(self):
         self.audio_input = Recorder(self.audio_callback)
         self.recognition = None
-        self.llm = AliyunLLM()
+        self.llm = LLMFactory.create_llm('aliyun')
         self.audio_player = PcmPlayer(self.on_play_end)
         self.speech_synthesizer = None
         self._audio_frame_count = 0
@@ -68,8 +69,8 @@ class MainApp:
 
     def start_recognition(self):
         if self.speech_synthesizer is None:
-            self.speech_synthesizer = AliyunTTS(self.audio_player)
-        self.recognition = AliyunRecognizer(callback=self.chat)
+            self.speech_synthesizer = TTSFactory.create_tts('aliyun', player=self.audio_player)
+        self.recognition = ASRFactory.create_asr("aliyun", callback=self.chat)
         self.recognition.start()
         self._audio_frame_count = 0
 
