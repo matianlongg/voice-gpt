@@ -1,3 +1,5 @@
+from config import config
+
 import datetime
 import importlib
 import threading
@@ -7,27 +9,18 @@ import os
 from src.asr.base import ASRFactory
 from src.llm.base import LLMFactory
 from src.tts.base import TTSFactory
-
-# 加载 .env 文件
-load_dotenv()
-
 import sys
 import time
 from config import config
 from src.audio_input.pcm_recorder import Recorder
 from src.audio_output.pcm_player import PcmPlayer
-import dashscope
-
-# 阿里云key
-# https://ai.aliyun.com/nls/trans
-if 'DASHSCOPE_API_KEY' in os.environ:
-    dashscope.api_key = os.environ['DASHSCOPE_API_KEY']
+print(config)
 
 class MainApp:
     def __init__(self):
         self.audio_input = Recorder(self.audio_callback)
         self.recognition = None
-        self.llm = LLMFactory.create_llm('aliyun')
+        self.llm = LLMFactory.create_llm(config["llm"])
         self.audio_player = PcmPlayer(self.on_play_end)
         self.speech_synthesizer = None
         self._audio_frame_count = 0
@@ -45,8 +38,8 @@ class MainApp:
         if self.recognition is not None and self.audio_input.is_working():
             self._audio_frame_count += 1
             buffer = indata.tobytes()
-            # sys.stdout.write("\rRecording: [{:<10}]".format('=' * self._audio_frame_count))
-            # sys.stdout.flush()
+            sys.stdout.write("\rRecording: [{:<10}]".format('=' * self._audio_frame_count))
+            sys.stdout.flush()
             self.recognition.send_audio_frame(buffer)
 
     def handle_voice_detection(self, voice_detected, current_time):
@@ -73,8 +66,7 @@ class MainApp:
 
     def start_recognition(self):
         print("start_recognition```````````````")
-        
-        self.recognition = ASRFactory.create_asr("aliyun", callback=self.chat)
+        self.recognition = ASRFactory.create_asr(config["asr"], callback=self.chat)
         self.recognition.start()
         self._audio_frame_count = 0
 
@@ -104,7 +96,7 @@ class MainApp:
             self._cache_text += text
             return
         if self.speech_synthesizer is None:
-            self.speech_synthesizer = TTSFactory.create_tts('aliyun', player=self.audio_player)
+            self.speech_synthesizer = TTSFactory.create_tts(config["tts"]["type"], player=self.audio_player)
             print("start speech_synthesizer```````````````")
         self._is_playing = True
         answer = ""

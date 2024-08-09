@@ -3,15 +3,17 @@ from src.llm.base import LLM
 from dashscope import Generation
 
 class AliyunLLM(LLM):
-    def __init__(self, prompt=""):
-        self.prompt = prompt  # 初始化时传入的prompt配置
+    def __init__(self, api_key=None, model='qwen-turbo', **kwargs):
+        import dashscope
+        dashscope.api_key = api_key
+        self.model = model
+        self.prompt = ""  # 初始化时传入的prompt配置
 
     def __call__(self, text):
         messages = [{'role': 'user', 'content': text}]
         # 调用OpenAI的大模型API，并返回结果
-        print(f"调用模型，输入文本: {text}")
         responses = Generation.call(
-            model='qwen-turbo',
+            model=self.model,
             messages=messages,
             result_format='message',  # set result format as 'message'
             stream=True,  # enable stream output

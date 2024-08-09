@@ -35,8 +35,14 @@ class AliyunASR(ASR):
             model='paraformer-realtime-v2',
             format='pcm',
             sample_rate=16000,
-            callback=None) -> None:
+            callback=None,
+            api_key=None,
+            **kwargs) -> None:
         super().__init__()
+        print(api_key)
+        import dashscope
+        dashscope.api_key = api_key
+        print(callback)
         self.callback = ASRCallback(callback)
         self.recognition = Recognition(
             model=model,

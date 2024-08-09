@@ -18,7 +18,7 @@ class ASR(ABC):
     
 class ASRFactory:
     @staticmethod
-    def create_asr(provider: str, **kwargs) -> ASR:
+    def create_asr(asr_config: dict, **kwargs) -> ASR:
         """
         根据提供者名称创建对应的 ASR 实例。
 
@@ -29,8 +29,11 @@ class ASRFactory:
         返回:
             ASR 实例。
         """
-        if provider.lower() == 'aliyun':
+        provider = asr_config["type"].lower()
+        combined_config = {**asr_config[provider], **kwargs}
+        print(combined_config)
+        if provider == 'aliyun':
             from src.asr.aliyun_asr import AliyunASR
-            return AliyunASR(**kwargs)
+            return AliyunASR(**combined_config)
         else:
             raise ValueError(f"未知的 ASR 提供者: {provider}")
