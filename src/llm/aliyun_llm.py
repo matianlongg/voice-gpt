@@ -8,13 +8,16 @@ class AliyunLLM(LLM):
         dashscope.api_key = api_key
         self.model = model
         self.prompt = ""  # 初始化时传入的prompt配置
+        self.message_history = []
+
 
     def __call__(self, text):
-        messages = [{'role': 'user', 'content': text}]
+        self.message_history.append({"role": "user", "content": text})
+
         # 调用OpenAI的大模型API，并返回结果
         responses = Generation.call(
             model=self.model,
-            messages=messages,
+            messages=self.message_history,
             result_format='message',  # set result format as 'message'
             stream=True,  # enable stream output
             incremental_output=True,  # enable incremental output
@@ -32,4 +35,6 @@ class AliyunLLM(LLM):
                         response.code,
                         response.message,
                     ))
+        self.message_history.append({"role": "assistant", "content": answer})
+
         return answer

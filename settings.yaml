@@ -6,7 +6,7 @@ asr:
     api_key: ${OPENAI_API_KEY}
 
 llm:
-  type: openai
+  type: aliyun
   aliyun:
     model: qwen-turbo
     api_key: ${DASHSCOPE_API_KEY}

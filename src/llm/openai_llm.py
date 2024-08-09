@@ -6,14 +6,19 @@ class OpenaiLLM(LLM):
         self.model = model
         self.prompt = prompt
         print(api_key, base_url)
+        self.message_history = []
         self.client = OpenAI(api_key=api_key, base_url=base_url)
 
     def __call__(self, text):
+
+        self.message_history.append({"role": "user", "content": text})
+
         response = self.client.chat.completions.create(
             model=self.model,
-            messages=[
-                # {"role": "system", "content": self.prompt},
-                {"role": "user", "content": text}
-            ]
+            messages=self.message_history
         )
-        return response.choices[0].message.content
+        assistant_message = response.choices[0].message.content
+
+        self.message_history.append({"role": "assistant", "content": assistant_message})
+
+        return assistant_message
