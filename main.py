@@ -35,6 +35,7 @@ class MainApp:
         """Send audio data to the recognition service"""
         current_time = time.time()
         self.handle_voice_detection(voice_detected, current_time)
+        print(self.recognition, self.audio_input.is_working())
         if self.recognition is not None and self.audio_input.is_working():
             self._audio_frame_count += 1
             buffer = indata.tobytes()
@@ -57,7 +58,7 @@ class MainApp:
             print("\nRecognition init and started")
 
     def stop_voice_recognition_if_necessary(self, current_time):
-        if self._last_speech_time and current_time - self._last_speech_time > 3.0:
+        if self._last_speech_time and current_time - self._last_speech_time > 2.0:
             if self.recognition is not None:
                 self.stop_recognition()
                 print("\nRecognition stopped")
@@ -90,6 +91,7 @@ class MainApp:
         self.stop_recognition()
 
     def chat(self, text):
+        print(text)
         current_time = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
         print(f"当前时间2: {current_time}")
         if self._is_playing:

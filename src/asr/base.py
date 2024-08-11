@@ -35,5 +35,8 @@ class ASRFactory:
         if provider == 'aliyun':
             from src.asr.aliyun_asr import AliyunASR
             return AliyunASR(**combined_config)
+        elif provider == 'openai':
+            from src.asr.openai_asr import OpenAIASR
+            return OpenAIASR(**combined_config)
         else:
             raise ValueError(f"未知的 ASR 提供者: {provider}")

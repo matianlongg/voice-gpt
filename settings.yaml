@@ -4,6 +4,7 @@ asr:
     api_key: ${DASHSCOPE_API_KEY}
   openai:
     api_key: ${OPENAI_API_KEY}
+    base_url: ${OPENAI_BASE_URL}
 
 llm:
   type: aliyun
