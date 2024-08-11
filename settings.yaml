@@ -1,3 +1,5 @@
+audio_input:
+  mute_duration: 2
 asr:
   type: aliyun
   aliyun:

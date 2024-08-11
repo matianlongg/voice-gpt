@@ -4,9 +4,10 @@ from dashscope.audio.asr import (Recognition, RecognitionCallback,
                                  RecognitionResult)
 
 class ASRCallback(RecognitionCallback):
-    def __init__(self, callback):
+    def __init__(self, callback, asr: ASR):
         super().__init__()
         self._callback = callback
+        self.asr = asr
 
     def on_open(self) -> None:
         print('Recognition open')  # recognition open
@@ -25,7 +26,7 @@ class ASRCallback(RecognitionCallback):
                 print(
                     '\nRecognitionCallback sentence end, request_id:%s, text: %s'
                     % (result.get_request_id(), sentence['text']))
-                self._callback(sentence['text'])
+                self._callback(sentence['text'], self.asr.is_playing)
     def on_close(self) -> None:
         print('Recognition close')
 
@@ -39,11 +40,9 @@ class AliyunASR(ASR):
             api_key=None,
             **kwargs) -> None:
         super().__init__()
-        print(api_key)
         import dashscope
         dashscope.api_key = api_key
-        print(callback)
-        self.callback = ASRCallback(callback)
+        self.callback = ASRCallback(callback, self)
         self.recognition = Recognition(
             model=model,
             # 'paraformer-realtime-v1'、'paraformer-realtime-8k-v1'
@@ -53,11 +52,14 @@ class AliyunASR(ASR):
             callback=self.callback
         )
         
-    def start(self):
+    def start(self, is_playing):
+        super().start(is_playing)
         self.recognition.start()
     
     def stop(self):
+        super().stop()
         self.recognition.stop()
     
     def send_audio_frame(self, frame):
+        super().send_audio_frame(frame)
         self.recognition.send_audio_frame(frame)

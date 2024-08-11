@@ -46,7 +46,7 @@ class Recorder(AudioInput):
         """内部回调函数，用于检测语音活动并调用用户回调。"""
         if status:
             print(status)
-        
+
         # 计算音频信号的能量
         energy = np.linalg.norm(indata) / frames
         # 检查能量是否超过阈值

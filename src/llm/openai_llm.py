@@ -5,7 +5,6 @@ class OpenaiLLM(LLM):
     def __init__(self, api_key=None, base_url='https://api.openai.com/v1', model="gpt-4o-mini", prompt=None, **kwargs):
         self.model = model
         self.prompt = prompt
-        print(api_key, base_url)
         self.message_history = []
         self.client = OpenAI(api_key=api_key, base_url=base_url)
 
